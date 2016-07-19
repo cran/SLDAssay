@@ -6,7 +6,7 @@
 #' this package was developed with the purpose of estimating IUPM, it is applicable to SLD
 #' assays in general.
 #'
-#' @importFrom stats dbinom optim qnorm uniroot
+#' @importFrom stats dbinom optim qnorm uniroot pchisq
 #'
 #' @param pos  Vector of number of positive wells at each dilution level (outcome of SLD Assay)
 #' @param replicates  Vector of number of replicates at each dilution level
@@ -17,12 +17,14 @@
 #' @param alpha  Confidence interval significance level
 #'
 #' @return \item{IUPM_MLE}{Maximum likelihood estimate of IUPM for the given outcome vector.}
-#' @return \item{PGOF }{P value for goodness of fit. PGOF is the probability of an
+#' @return \item{Exact_PGOF}{P value for goodness of fit. PGOF is the probability of an
 #' experimental result as rare as or rarer than that obtained, assuming that the model is
 #' correct. Low values of PGOF, (e.g. PGOF < 0.01), indicate rare or implausible experimental
 #' results. Samples with a very low PGOF might be considered for retesting.}
+#' @return \item{Asymp_PGOF}{P value calculated using an asymptotic Chi-Squared distribution with D-1 degrees of freedom,
+#' where D is the number of dilution levels in an SLD assay.}
 #' @return \item{Exact_CI}{Exact confidence interval, computed from the likelihood ratio test (recommended)}
-#' @return \item{Asymp_CI}{Wald asymptotic confidence interval, based on the normal approximation to the binomial distribution}
+#' @return \item{Asymp_CI}{Wald asymptotic confidence interval, based on the normal approximation to the binomial distribution.}
 #'
 #' @references Myers, L. E., McQuay, L. J., & Hollinger, F. B. (1994). Dilution assay statistics.
 #'             Journal of Clinical Microbiology, 32(3), 732-739. DOI:10.1.1.116.1568
@@ -72,6 +74,24 @@ get.iupm <- function(pos,replicates,dilutions,monte=15000,alpha=0.05){
   # Upper and lower asymptotic confidence intervals
   lower.asy <- exp(opt$par-qnorm(.975)*se)
   upper.asy <- exp(opt$par+qnorm(.975)*se)
+
+  # Asymptotic PGOF
+  asy.pvalue<-function(n,repsize,numsuccess,f)
+  {
+    chisq=0
+    for(ii in 1:length(n))
+    {
+      E.i=repsize[ii]*(1-exp(-1*f*n[ii]))
+      O.i=numsuccess[ii]
+      val1=((E.i-O.i)^2)/(E.i)
+      val2=((E.i-O.i)^2)/(repsize[ii]-E.i)
+      chisq=chisq+val1+val2
+    }
+    df=length(n)-1
+    pval=1-pchisq(chisq,df)
+    return(pval)
+  }
+  pgof.asy<- asy.pvalue(n=dilutions,repsize=replicates,numsuccess=pos,f=mle/10^6)
 
   # Define number of Monte Carlo samples
   if (monte==F) mc <- prod(replicates+1)
@@ -124,5 +144,5 @@ get.iupm <- function(pos,replicates,dilutions,monte=15000,alpha=0.05){
 
   asy=c(lower.asy,upper.asy)
   exact=c(lower,upper)
-  return(list("IUPM_MLE"=mle,"PGOF"=gof.p,"Asymp_CI"=asy,"Exact_CI"=exact))
+  return(list("IUPM_MLE"=mle,"Exact_PGOF"=gof.p,"Exact_CI"=exact, "Asymp_PGOF"=pgof.asy,"Asymp_CI"=asy))
 }

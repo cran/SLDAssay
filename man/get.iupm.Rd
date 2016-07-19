@@ -22,14 +22,17 @@ more than 15,000 possible positive well outcomes exist, in which case 15,000 MC 
 \value{
 \item{IUPM_MLE}{Maximum likelihood estimate of IUPM for the given outcome vector.}
 
-\item{PGOF }{P value for goodness of fit. PGOF is the probability of an
+\item{Exact_PGOF}{P value for goodness of fit. PGOF is the probability of an
 experimental result as rare as or rarer than that obtained, assuming that the model is
 correct. Low values of PGOF, (e.g. PGOF < 0.01), indicate rare or implausible experimental
 results. Samples with a very low PGOF might be considered for retesting.}
 
+\item{Asymp_PGOF}{P value calculated using an asymptotic Chi-Squared distribution with D-1 degrees of freedom,
+where D is the number of dilution levels in an SLD assay.}
+
 \item{Exact_CI}{Exact confidence interval, computed from the likelihood ratio test (recommended)}
 
-\item{Asymp_CI}{Wald asymptotic confidence interval, based on the normal approximation to the binomial distribution}
+\item{Asymp_CI}{Wald asymptotic confidence interval, based on the normal approximation to the binomial distribution.}
 }
 \description{
 Calculates the maximum likelihood estimate of infectious units per million (IUPM)

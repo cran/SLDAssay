@@ -4,7 +4,7 @@
 \alias{get.iupm}
 \title{IUPM, PGOF, and CI}
 \usage{
-get.iupm(pos, replicates, dilutions, monte = 15000, alpha = 0.05)
+get.iupm(pos, replicates, dilutions, monte = 15000, conf.level = 0.95)
 }
 \arguments{
 \item{pos}{Vector of number of positive wells at each dilution level (outcome of SLD Assay)}
@@ -17,7 +17,7 @@ get.iupm(pos, replicates, dilutions, monte = 15000, alpha = 0.05)
 more than 15,000 possible positive well outcomes exist, in which case 15,000 MC samples are taken.
  Use monte=F for exact computation.}
 
-\item{alpha}{Confidence interval significance level}
+\item{conf.level}{Confidence level of the interval.}
 }
 \value{
 \item{IUPM_MLE}{Maximum likelihood estimate of IUPM for the given outcome vector.}
@@ -36,8 +36,8 @@ where D is the number of dilution levels in an SLD assay.}
 }
 \description{
 Calculates the maximum likelihood estimate of infectious units per million (IUPM)
-from a single serial limiting dilution (SLD) assay. Also calculates corresponding 1-alpha
-level exact and asymptotic confidence intervals, and a goodness-of-fit p-value. While
+from a single serial limiting dilution (SLD) assay. Also calculates corresponding
+exact and asymptotic confidence intervals, and a goodness-of-fit p-value. While
 this package was developed with the purpose of estimating IUPM, it is applicable to SLD
 assays in general.
 }
@@ -48,7 +48,7 @@ assays in general.
 row4 <- get.iupm(pos=c(2,1,0,0,0,0),  # Number of positive wells per dilution level
                  replicates=rep(2,6), # Number of replicates per dilution level
                  dilutions=c(1e6,2e5,4e4,8e3,1600,320), # Cells per dilution level
-                 alpha=0.05   # Significance level
+                 conf.level=0.95   # Significance level
                  )
 
 # Duplicates row 21 of Table 4 from Myers, et. al.
@@ -58,7 +58,7 @@ row4 <- get.iupm(pos=c(2,1,0,0,0,0),  # Number of positive wells per dilution le
 row21 <- get.iupm(pos=c(2,2,2,0,1,0),
                  replicates=rep(2,6),
                  dilutions=c(1e6,2e5,4e4,8e3,1600,320),
-                 alpha=0.05 )
+                 conf.level=0.95 )
 
 # Monte Carlo example
 # 67,081 total possible positive well outcomes, therefore
@@ -66,7 +66,7 @@ row21 <- get.iupm(pos=c(2,2,2,0,1,0),
 MC.example <- get.iupm(pos=c(30,9,1,0),
                        replicates=c(36,36,6,6),
                        dilutions=c(2.5e6,5e5,1e5,2.5e4),
-                       alpha=0.05,
+                       conf.level=0.95,
                        monte = 5000 )
 }
 \references{

@@ -1,8 +1,8 @@
 #' IUPM, PGOF, and CI
 #'
 #' Calculates the maximum likelihood estimate of infectious units per million (IUPM)
-#' from a single serial limiting dilution (SLD) assay. Also calculates corresponding 1-alpha
-#' level exact and asymptotic confidence intervals, and a goodness-of-fit p-value. While
+#' from a single serial limiting dilution (SLD) assay. Also calculates corresponding
+#' exact and asymptotic confidence intervals, and a goodness-of-fit p-value. While
 #' this package was developed with the purpose of estimating IUPM, it is applicable to SLD
 #' assays in general.
 #'
@@ -14,7 +14,7 @@
 #' @param monte  Number of Monte Carlo samples. Default is exact (no MC sampling), unless
 #' more than 15,000 possible positive well outcomes exist, in which case 15,000 MC samples are taken.
 #'  Use monte=F for exact computation.
-#' @param alpha  Confidence interval significance level
+#' @param conf.level Confidence level of the interval.
 #'
 #' @return \item{IUPM_MLE}{Maximum likelihood estimate of IUPM for the given outcome vector.}
 #' @return \item{Exact_PGOF}{P value for goodness of fit. PGOF is the probability of an
@@ -36,7 +36,7 @@
 #' row4 <- get.iupm(pos=c(2,1,0,0,0,0),  # Number of positive wells per dilution level
 #'                  replicates=rep(2,6), # Number of replicates per dilution level
 #'                  dilutions=c(1e6,2e5,4e4,8e3,1600,320), # Cells per dilution level
-#'                  alpha=0.05   # Significance level
+#'                  conf.level=0.95   # Significance level
 #'                  )
 #'
 #' # Duplicates row 21 of Table 4 from Myers, et. al.
@@ -46,7 +46,7 @@
 #' row21 <- get.iupm(pos=c(2,2,2,0,1,0),
 #'                  replicates=rep(2,6),
 #'                  dilutions=c(1e6,2e5,4e4,8e3,1600,320),
-#'                  alpha=0.05 )
+#'                  conf.level=0.95 )
 #'
 #' # Monte Carlo example
 #' # 67,081 total possible positive well outcomes, therefore
@@ -54,7 +54,7 @@
 #' MC.example <- get.iupm(pos=c(30,9,1,0),
 #'                        replicates=c(36,36,6,6),
 #'                        dilutions=c(2.5e6,5e5,1e5,2.5e4),
-#'                        alpha=0.05,
+#'                        conf.level=0.95,
 #'                        monte = 5000 )
 
 #' @import compiler
@@ -64,16 +64,17 @@
 # Calculate IUPM, PGOF, and CIs (main function)
 # Exact CI is default, only use Monte Carlo Sims if total rows is greater than 15000
 
-get.iupm <- function(pos,replicates,dilutions,monte=15000,alpha=0.05){
+get.iupm <- function(pos,replicates,dilutions,monte=15000,conf.level=0.95){
 
+  alpha <- 1-conf.level
   # Calculate MLE
   opt <- optim(-6,like,pos=pos,replicates=replicates,dilutions=dilutions,lower=-18,upper=14,method="Brent",hessian=T)
   mle <- exp(opt$par)
   se <- sqrt(1/opt$hessian)
 
   # Upper and lower asymptotic confidence intervals
-  lower.asy <- exp(opt$par-qnorm(.975)*se)
-  upper.asy <- exp(opt$par+qnorm(.975)*se)
+  lower.asy <- exp(opt$par-qnorm(1-alpha/2)*se)
+  upper.asy <- exp(opt$par+qnorm(1-alpha/2)*se)
 
   # Asymptotic PGOF
   asy.pvalue<-function(n,repsize,numsuccess,f)

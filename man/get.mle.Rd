@@ -5,7 +5,7 @@
 \title{IUPM, PGOF, and CI}
 \usage{
 get.mle(pos, replicates, dilutions, monte = 15000, conf.level = 0.95,
-  iupm = TRUE)
+  iupm = TRUE, na.rm = FALSE)
 }
 \arguments{
 \item{pos}{Vector of number of positive wells at each dilution level (outcome of SLD Assay)}
@@ -21,6 +21,8 @@ more than 15,000 possible positive well outcomes exist, in which case 15,000 MC 
 \item{conf.level}{Confidence level of the interval.}
 
 \item{iupm}{Boolean variable, indicates whether to return MLE as IUPM (TRUE) or probability a cell is infected (FALSE)}
+
+\item{na.rm}{Boolean variable, indicates whether dilution levels valued NA should be stripped before the computation proceeds (FALSE)}
 }
 \value{
 \item{MLE}{Maximum likelihood estimate for the given outcome vector.}

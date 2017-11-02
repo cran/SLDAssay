@@ -16,6 +16,7 @@
 #'  Use monte=F for exact computation.
 #' @param conf.level Confidence level of the interval.
 #' @param iupm Boolean variable, indicates whether to return MLE as IUPM (TRUE) or probability a cell is infected (FALSE)
+#' @param na.rm Boolean variable, indicates whether dilution levels valued NA should be stripped before the computation proceeds (FALSE)
 #'
 #' @return \item{MLE}{Maximum likelihood estimate for the given outcome vector.}
 #' @return \item{BC_MLE}{Bias corrected maximum likelihood estimate for the given outcome vector.}
@@ -73,7 +74,33 @@
 # Calculate IUPM, PGOF, and CIs (main function)
 # Exact CI is default, only use Monte Carlo Sims if total rows is greater than 15000
 
-get.mle <- function(pos,replicates,dilutions,monte=15000,conf.level=0.95, iupm=TRUE){
+get.mle <- function(pos,replicates,dilutions,monte=15000,conf.level=0.95, iupm=TRUE, na.rm=FALSE){
+  
+  # How to deal with NA
+  if (na.rm==TRUE){
+    if (any(is.na(pos))==T){
+      p=which(is.na(pos))
+      pos=pos[-p]
+      replicates=replicates[-p]
+      dilutions=dilutions[-p]
+    }
+    if (any(is.na(replicates))==T){
+      p=which(is.na(replicates))
+      pos=pos[-p]
+      replicates=replicates[-p]
+      dilutions=dilutions[-p]
+    }
+    if (any(is.na(dilutions))==T){
+      p=which(is.na(dilutions))
+      pos=pos[-p]
+      replicates=replicates[-p]
+      dilutions=dilutions[-p]
+    }
+  }else if (na.rm==F){
+    if (any(is.na(pos))==T | any(is.na(replicates))==T | any(is.na(dilutions))==T){
+      return("Error: element in pos, replicates, or dilutions is NA. To remove this dilution level, use na.rm=T")
+    }
+  }
   
   # Sanity checks
   if (length(pos)!=length(replicates) | length(pos)!=length(dilutions) | length(replicates)!=length(dilutions)){
@@ -87,6 +114,8 @@ get.mle <- function(pos,replicates,dilutions,monte=15000,conf.level=0.95, iupm=T
   if ( all(pos>=0)==F | all(replicates>=0)==F | all(dilutions>=0)==F){
     return("ERROR: elements in pos, replicates, and diltuionso must be non-negative")
   }
+  
+  
   
   pos.int<-pos%%1
   replicates.int<-replicates%%1
